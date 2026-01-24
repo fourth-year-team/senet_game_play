@@ -119,7 +119,7 @@ class ExpectiMinimaxPlayer:
         
         # max player's turn
         if state.current_player == self.player_color:
-            print(f"max")
+            # print(f"max")
             max_value = -math.inf
             for move in possible_moves:
                 next_state = self.game_engine.transition_model(state, move)
@@ -132,7 +132,7 @@ class ExpectiMinimaxPlayer:
 
         #min player's turn
         else:
-            print(f"min")
+            # print(f"min")
             min_value = math.inf
             for move in possible_moves:
                 next_state = self.game_engine.transition_model(state, move)
