@@ -46,4 +46,4 @@ class PLayerMode:
                              "Black" if self.game.state.current_player == PlayerColor.BLACK else "White",
                              self.action,
                              "0",
-                             0)
+                             0)  
