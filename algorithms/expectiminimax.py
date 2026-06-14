@@ -1,12 +1,12 @@
-from math import inf
+import math
 from game_state import State, PlayerColor
 from game_engine import GameEngine
 from copy import deepcopy
 
 class ExpectiMinimaxPlayer:
-    def __init__(self, player_color: PlayerColor, depth: int = 5):
+    def __init__(self, player_color: PlayerColor, max_depth: int = 3):
         self.player_color = player_color
-        self.depth = depth
+        self.max_depth = max_depth
         self.game_engine = GameEngine()
         self.probabilities = {1: 4/16, 2: 6/16, 3: 4/16, 4: 1/16, 5: 1/16}
         self.visited_states=0
@@ -47,34 +47,34 @@ class ExpectiMinimaxPlayer:
     def _is_game_over(self, state: State) -> bool:
         return not state.white_positions or not state.black_positions
 
-    # def _get_player_score(self, positions: frozenset) -> float:
-    #     score = 0.0
-    #     House_of_Happiness = 26
-    #     House_of_Water = 27
-    #     House_of_Three = 28 # square you can get stuck in
-    #     House_of_Atom = 29 # square you can get stuck in
-    #     Total_Pawns = 7
+    def _get_player_score(self, positions: frozenset) -> float:
+        score = 0.0
+        House_of_Happiness = 26
+        House_of_Water = 27
+        House_of_Three = 28 # square you can get stuck in
+        House_of_Atom = 29 # square you can get stuck in
+        Total_Pawns = 7
 
-    #     for pawn_pos in positions:
-    #         if pawn_pos == House_of_Water:
-    #             score -= 50
+        for pawn_pos in positions:
+            if pawn_pos == House_of_Water:
+                score -= 50
 
-    #         elif pawn_pos == House_of_Happiness:
-    #             score += 40
+            elif pawn_pos == House_of_Happiness:
+                score += 40
 
-    #         elif pawn_pos == House_of_Three:
-    #             score -= 25
-    #         elif pawn_pos == House_of_Atom:
-    #             score -= 30
-    #         else:
-    #             score += pawn_pos
+            elif pawn_pos == House_of_Three:
+                score -= 25
+            elif pawn_pos == House_of_Atom:
+                score -= 30
+            else:
+                score += pawn_pos
 
-    #     pawns_off_board = Total_Pawns - len(positions)
-    #     score += pawns_off_board * 100
+        pawns_off_board = Total_Pawns - len(positions)
+        score += pawns_off_board * 100
 
-    #     return score
+        return score
     
-    def evaluate(self, state: State) -> int:
+    def evaluate(self, state: State) -> float:
         if self._is_game_over(state):
             if not state.black_positions:
                 return math.inf if self.player_color == PlayerColor.BLACK else -math.inf
@@ -87,20 +87,22 @@ class ExpectiMinimaxPlayer:
         else:
             return white_score - black_score
     
-    # def expected_value(self,state :State, depth :int) ->int:
-    #     total_expected_value = 0.0
+    def expected_value(self,state :State, depth :int) ->float:
+        total_expected_value = 0.0
 
-    #     for sticks_roll, probability in self.probabilities.items():
-    #         roll_state = State( 
-    #             white_positions = deepcopy(state.white_positions),
-    #             black_positions = deepcopy(state.black_positions),
-    #             current_player = state.current_player,
-    #             sticks = sticks_roll,
-    #             parent = state.parent)
+        for sticks_roll, probability in self.probabilities.items():
+            roll_state = State( 
+                white_positions = deepcopy(state.white_positions),
+                black_positions = deepcopy(state.black_positions),
+                current_player = state.current_player,
+                sticks = sticks_roll,
+                parent = state.parent
 
-    #         total_expected_value += self.get_value(roll_state, depth) * probability
+            )
 
-    #     return total_expected_value
+            total_expected_value += self.get_value(roll_state, depth)* probability
+
+        return total_expected_value
 
     def get_value(self, state: State, depth: int) -> float:
         self.visited_states+=1
@@ -110,12 +112,12 @@ class ExpectiMinimaxPlayer:
             # print("LEAF/EVAL depth", depth, "player", state.current_player)
             return self.evaluate(state)
         
-    #     possible_moves = self.game_engine.actions(state)
+        possible_moves = self.game_engine.actions(state)
         
-    #     if not possible_moves:
-    #         next_Player = PlayerColor.WHITE if state.current_player == PlayerColor.BLACK else PlayerColor.BLACK
-    #         skipped_state = State(state.white_positions, state.black_positions, next_Player, 0, state)
-    #         return self.expected_value(skipped_state, depth-1)
+        if not possible_moves:
+            next_Player = PlayerColor.WHITE if state.current_player == PlayerColor.BLACK else PlayerColor.BLACK
+            skipped_state = State(state.white_positions, state.black_positions, next_Player, 0, state)
+            return self.expected_value(skipped_state, depth-1)
         
         # max player's turn
         if state.current_player == self.player_color:
@@ -128,7 +130,7 @@ class ExpectiMinimaxPlayer:
                 value = self.expected_value(next_state, depth-1)
                 max_value = max(max_value,value)
 
-    #         return max_value
+            return max_value
 
         #min player's turn
         else:
@@ -141,7 +143,7 @@ class ExpectiMinimaxPlayer:
                 value = self.expected_value(next_state, depth-1)
                 min_value = min(min_value, value)
 
-    #         return min_value
+            return min_value
      
     def analysis_inf(self,state:State):
         self.visited_states=0
